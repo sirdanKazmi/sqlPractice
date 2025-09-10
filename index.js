@@ -19,7 +19,7 @@ const connection = mysql.createConnection({
   user: "root",
   database: "sqlpractice",
   // port: 3306,
-  password: "12345678",
+  password: "Your password",
 });
 
 app.get('/users/new', (req, res)=>{
