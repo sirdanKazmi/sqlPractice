@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add User</title>
+  <style>
+    :root { --page:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#6d5efc; --primary-600:#5a4aec; --ring:rgba(109,94,252,.25); --shadow:0 12px 30px rgba(17,24,39,.08); --radius:16px; }
+    @media (prefers-color-scheme: dark) { :root { --page:#0b0e14; --card:#0f1420; --text:#e5e7eb; --muted:#9aa4b2; --shadow:0 12px 30px rgba(0,0,0,.35); } }
+    *{box-sizing:border-box}
+    body{margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--page); color:var(--text)}
+    .wrap{max-width:860px;margin:0 auto;padding:28px 18px}
+    .app-header{background:linear-gradient(180deg, rgba(29,78,216,.14), rgba(109,94,252,.12)), var(--page); border-bottom:1px solid rgba(109,94,252,.12)}
+    .headline{display:flex; align-items:center; gap:12px}
+    .headline h1{font-size:22px; font-weight:800; margin:0}
+    .back{margin-left:auto}
+    .btn{appearance:none;border:1px solid rgba(109,94,252,.18); background:var(--card); color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow); font-weight:600; font-size:13px; transition: transform .06s ease, box-shadow .2s ease}
+    .btn:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(17,24,39,.12)}
+    .btn--primary{ background:var(--primary); color:#fff; border-color:transparent }
+    .btn--primary:hover{ background:var(--primary-600) }
+    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid rgba(109,94,252,.10); padding:18px; margin-top:16px}
+    .form{display:grid; grid-template-columns:1fr; gap:14px}
+    @media(min-width:780px){ .form{ grid-template-columns: 280px 1fr } }
+    .avatar-pane{display:grid; gap:12px; align-content:start}
+    .avatar-wrap{ display:flex; justify-content:center }
+    .avatar{ width:140px; height:140px; border-radius:50%; object-fit:cover; border:2px solid rgba(109,94,252,.25); box-shadow:inset 0 0 0 3px #fff; background:#fff }
+    .field{ display:grid; gap:6px }
+    .label{ font-weight:700; font-size:13px }
+    .hint{ font-size:12px; color:var(--muted) }
+    .input, .select, .textarea, .password{ width:100%; padding:12px 12px; border:1px solid rgba(109,94,252,.18); background:var(--card); color:var(--text); border-radius:12px; outline:none; transition:border-color .2s ease, box-shadow .2s ease }
+    .input:focus, .select:focus, .textarea:focus, .password:focus{ border-color:var(--primary); box-shadow:0 0 0 6px var(--ring) }
+    .row{ display:grid; grid-template-columns: 1fr; gap:14px }
+    @media(min-width:620px){ .row{ grid-template-columns: 1fr 1fr } }
+    .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px }
+    .errors{ background:#fde8e8; color:#9b1c1c; border:1px solid #f8b4b4; padding:10px 12px; border-radius:12px; margin-top:12px }
+    .success{ background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:10px 12px; border-radius:12px; margin-top:12px }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="wrap">
+      <div class="headline">
+        <h1>Add User</h1>
+        <a class="btn back" href="/users">← Back to all users</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <% if (typeof flash !== 'undefined' && flash.error) { %>
+      <div class="errors"><%= flash.error %></div>
+    <% } %>
+    <% if (typeof flash !== 'undefined' && flash.success) { %>
+      <div class="success"><%= flash.success %></div>
+    <% } %>
+
+    <section class="card">
+      <form class="form" id="create-form" method="POST" action="/users">
+        <% if (typeof csrfToken !== 'undefined') { %>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <% } %>
+
+        <!-- Left: Avatar -->
+        <aside class="avatar-pane">
+          <div class="avatar-wrap">
+            <img id="avatarPreview" class="avatar" src="<%= user.avatar %>" alt="Avatar preview" />
+          </div>
+          <div class="field">
+            <label class="label" for="avatar">Avatar URL</label>
+            <input class="input" id="avatar" name="avatar" type="url" placeholder="https://…" value="<%= user.avatar %>" />
+            <div class="hint">Paste a direct image URL. Preview updates live.</div>
+          </div>
+          <button type="button" id="randomAvatar" class="btn">Randomize Avatar</button>
+        </aside>
+
+        <!-- Right: Fields -->
+        <section>
+          <div class="row">
+            <div class="field">
+              <label class="label" for="username">Username</label>
+              <input class="input" id="username" name="username" type="text" required minlength="2" value="<%= user.username %>" />
+            </div>
+            <div class="field">
+              <label class="label" for="email">Email</label>
+              <input class="input" id="email" name="email" type="email" required value="<%= user.email %>" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label class="label" for="birthdate">Birthdate</label>
+              <input class="input" id="birthdate" name="birthdate" type="date" value="<%= user.birthdateISO || '' %>" />
+              <div class="hint">Format: YYYY-MM-DD</div>
+            </div>
+            <div class="field">
+              <label class="label" for="status">Status</label>
+              <select class="select" id="status" name="status">
+                <option value="active"   <%= user.status === 'active'   ? 'selected' : '' %>>Active</option>
+                <option value="suspended"<%= user.status === 'suspended'? 'selected' : '' %>>Suspended</option>
+                <option value="pending"  <%= user.status === 'pending'  ? 'selected' : '' %>>Pending</option>
+              </select>
+              <div class="hint">Optional example field—remove if unused.</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="notes">Notes</label>
+            <textarea class="textarea" id="notes" name="notes" rows="4" placeholder="Internal notes…"><%= user.notes || '' %></textarea>
+          </div>
+
+          <div class="field">
+            <label class="label" for="password">Enter password to Create</label>
+            <input class="password" type="password" id="password" name="password" required>
+          </div>
+
+          <div class="actions">
+            <a class="btn" href="/users">Cancel</a>
+            <button class="btn btn--primary" type="submit">Create User</button>
+          </div>
+        </section>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    // tiny QoL: live avatar preview + optional random avatar
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    avatarInput?.addEventListener('input', () => { avatarPreview.src = avatarInput.value || ''; });
+
+    document.getElementById('randomAvatar')?.addEventListener('click', () => {
+      const url = `https://api.dicebear.com/7.x/thumbs/svg?seed=${Math.random().toString(36).slice(2)}`;
+      avatarInput.value = url;
+      avatarPreview.src = url;
+    });
+  </script>
+</body>
+</html>
